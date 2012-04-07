@@ -9,7 +9,7 @@ sig Person {
 enum State {Married, NotMarried}
 
 pred init (t: Time) {
-  all p: Person | p.state.t = NotMarried
+	all p: Person | p.state.t = NotMarried
 }
 
 pred step (t, t': Time) {
