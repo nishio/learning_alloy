@@ -1,10 +1,14 @@
 open util/ordering[Time]
+open named_man_ja [Man]
+open named_woman_ja [Woman]
 
 sig Time {}
 
-sig Person {
+abstract sig Person {
 	state: State -> Time,
 }
+
+abstract sig Man, Woman extends Person {}
 
 enum State {Married, NotMarried}
 
