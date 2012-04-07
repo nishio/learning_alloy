@@ -13,6 +13,5 @@ abstract sig Woman extends Person {
 
 
 run {
-  #Man = 3
-  #Woman = 5
-} for 10
+//  all p: Person | some p.~love
+} for exactly 3 Man, exactly 5 Woman

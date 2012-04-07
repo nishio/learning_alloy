@@ -39,5 +39,5 @@ fact {
 
 run {
     #Person.father > 2
-   #Person.mother > 2
+    #Person.mother > 2
 } for 10

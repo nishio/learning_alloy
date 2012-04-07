@@ -2,29 +2,31 @@ open util/ordering[Term]
 
 some abstract sig Term {}
 
-one sig K extends Term {}
+one sig S, K extends Term {}
 
 sig Apply extends Term {
 	f, g: Term
 }
 
 fact {
-	all x, y: Term | (x -> y) in (f + g) => y not in (x.prevs + x)
+	all x, y: Term | (x -> y) in (f + g) => y in x.nexts
 }
 
 pred equal_k (x, y: Term) {
-	x in Apply and x.f in Apply and x.f.f = K and y = x.f.g
-}
-pred equal_k2 (x, y: Term) {
 	one a, b: Term | x = apply[apply[K, a], b] and y = a
 }
-check {
-	some x, y: Term | equal_k[x, y] iff equal_k2[x, y]
+
+pred equal_s (x, y: Term) {
+	one a, b, c: Term {
+		x = apply[apply[apply[S, a], b], c]
+		and
+		y = apply[apply[a, c], apply[b, c]]
+	}
 }
 
-//pred equal_s (x, y: Term) {}
 pred equal (x, y: Term) {
-	equal_k[x, y]// or equal_s[x, y]
+	equal_k[x, y] or equal_s[x, y] or 
+	one z: Term | equal[x, z] and equal[z, y]
 }
 
 fun apply(x, y: Term): Term{	
@@ -36,5 +38,7 @@ fact {
 }
 
 run {
-	some x, y: Term | equal[x, y]
+	some I: Term | all x: Term | equal[apply[I, x], x]
+	//one apply[apply[apply[S, K], K], S]
+	
 } for 5 Term
