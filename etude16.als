@@ -18,7 +18,7 @@ pred init (t: Time) {
 
 pred step (t, t': Time) {
 	some disj p1 : Man, p2 : Woman {
-		{
+		{{
 			// marrige
 			p1.state.t = NotMarried and p2.state.t = NotMarried
 			p1.state.t' = Married and p2.state.t' = Married
@@ -26,6 +26,10 @@ pred step (t, t': Time) {
 			// divorce
 			p1.state.t = Married and p2.state.t = Married
 			p1.state.t' = NotMarried and p2.state.t' = NotMarried
+		}}
+		// others don't change their state
+		let others = (Person - p1 - p2) {
+			others.state.t = others.state.t'
 		}
 	}
 }
@@ -37,4 +41,4 @@ fact Traces {
 	}
 }
 
-run {} for exactly 3 Person, 5 Time
+run {} for 3 Person, 5 Time
