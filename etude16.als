@@ -17,7 +17,7 @@ pred init (t: Time) {
 }
 
 pred step (t, t': Time) {
-	some disj p1, p2 : Person {
+	some disj p1 : Man, p2 : Woman {
 		{
 			// marrige
 			p1.state.t = NotMarried and p2.state.t = NotMarried
