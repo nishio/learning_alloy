@@ -16,21 +16,25 @@ pred init (t: Time) {
 	all p: Person | p.state.t = NotMarried
 }
 
+pred change_state (
+	p1 : Man, p2 : Woman,
+	t, t': Time,
+	before, after : State){
+		p1.state.t = before
+		p2.state.t = before
+		p1.state.t' = after
+		p2.state.t' = after
+		// others don't change their state
+		all other: (Person - p1 - p2) {
+			other.state.t = other.state.t'
+		}	
+}
+
 pred step (t, t': Time) {
 	some disj p1 : Man, p2 : Woman {
-		{{
-			// marrige
-			p1.state.t = NotMarried and p2.state.t = NotMarried
-			p1.state.t' = Married and p2.state.t' = Married
-		} or {
-			// divorce
-			p1.state.t = Married and p2.state.t = Married
-			p1.state.t' = NotMarried and p2.state.t' = NotMarried
-		}}
-		// others don't change their state
-		let others = (Person - p1 - p2) {
-			others.state.t = others.state.t'
-		}
+		change_state[p1, p2, t, t', NotMarried, Married]
+		or
+		change_state[p1, p2, t, t', Married, NotMarried]
 	}
 }
 
@@ -41,4 +45,4 @@ fact Traces {
 	}
 }
 
-run {} for 3 Person, 5 Time
+run {} for exactly 4 Person, 4 Time
