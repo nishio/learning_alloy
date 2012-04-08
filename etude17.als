@@ -125,8 +125,6 @@ pred can_marry_bio (from, to: Person){
 run {
 	some parent_bio
 	some p1: Man, p2: Woman {
-//		p.parent_bio & Man != p.parent_think & Man
-//		one p.parent_think & Man
-		can_marry_think[p1, p2] and not can_marry_bio[p1, p2]
+		not can_marry_think[p1, p2] and can_marry_bio[p1, p2]
 	}
-} for exactly 4 Person, 4 Time
+} for 6 Person, 8 Time
