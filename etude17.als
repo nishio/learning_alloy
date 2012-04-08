@@ -85,11 +85,11 @@ pred step (t, t': Time) {
 		// birth
 		t'.event = Birth
 		change_state[p, t, t', NotExist, NotMarried]
-		some father: p.parent_bio & Man {
+		let father = p.parent_bio & Man {
 			one father
 			father.state.t != NotExist
 		}
-		some mother: p.parent_bio & Woman {
+		let mother = p.parent_bio & Woman {
 			one mother
 			mother.state.t != NotExist
 			let hasband = mother.partner.t {
@@ -112,5 +112,8 @@ fact Traces {
 
 run {
 	some parent_bio
-	some p: Person {p.parent_bio & Man != p.parent_think & Man}
+	some p: Person {
+		p.parent_bio & Man != p.parent_think & Man
+		one p.parent_think & Man
+	}
 } for exactly 4 Person, 4 Time
