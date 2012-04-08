@@ -110,10 +110,23 @@ fact Traces {
 	}
 }
 
+pred can_marry_think (from, to: Person){
+	to not in from.^parent_think
+	from not in to.^parent_think
+	to not in from.parent_think.~parent_think
+}
+
+pred can_marry_bio (from, to: Person){
+	to not in from.^parent_bio
+	from not in to.^parent_bio
+	to not in from.parent_bio.~parent_bio
+}
+
 run {
 	some parent_bio
-	some p: Person {
-		p.parent_bio & Man != p.parent_think & Man
-		one p.parent_think & Man
+	some p1: Man, p2: Woman {
+//		p.parent_bio & Man != p.parent_think & Man
+//		one p.parent_think & Man
+		can_marry_think[p1, p2] and not can_marry_bio[p1, p2]
 	}
 } for exactly 4 Person, 4 Time
