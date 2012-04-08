@@ -126,5 +126,6 @@ run {
 	some parent_bio
 	some p1: Man, p2: Woman {
 		not can_marry_think[p1, p2] and can_marry_bio[p1, p2]
+		p2 in p1.parent_think.~parent_think
 	}
 } for 6 Person, 8 Time
