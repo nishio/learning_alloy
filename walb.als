@@ -1,5 +1,5 @@
 // walb
-open util/ordering[ReadPack + WritePack]
+open util/ordering[OrderedPack]
 open util/ordering[Request]
 
 // Requestの分類
@@ -18,13 +18,15 @@ sig Flush extends Request{}
 // Packの分類
 abstract sig Pack {}
 
-sig WritePack extends Pack {
+abstract sig OrderedPack {}
+
+sig WritePack extends OrderedPack {
 	log: one LogPack,
 	data: one DataPack
 	
 }
 
-sig ReadPack extends Pack {}
+sig ReadPack extends OrderedPack {}
 
 sig LogPack extends Pack {}
 
