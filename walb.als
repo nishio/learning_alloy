@@ -5,16 +5,17 @@ open util/ordering[Time] as time
 
 enum Bool {True, False}
 
+sig Device {
+	real: Bool -> Time,
+	virtual: Bool -> Time
+}
+
 // Requestの分類
 abstract sig Request{
-	addr: Int,
-	size: Int,
+	target: Device,
 	belong: lone Pack,
 	began: Bool -> Time,
 	ended: Bool -> Time
-}{
-	addr > 0
-	size > 0
 }
 
 sig WriteReq extends Request{}{
@@ -26,10 +27,11 @@ sig ReadReq extends Request{}{
 	one belong
 	belong in ReadPack
 }
-
+/*
 sig Flush extends Request{}{
 	no belong
 }
+*/
 
 // Packの分類
 abstract sig Pack {
@@ -66,12 +68,7 @@ fact {
 }
 
 pred overlap(disj ri, rj: Request){
-	//Given i, j where i != j, 
-	// not (addr(req_i) + size(req_i) <= addr(req_j) or 
-	// addr(reg_j) + size(req_j) <= addr(req_i) is true
-	not(
-		addr[ri] + size[ri] <= addr[rj] or
-		addr[rj] + size[rj] <= addr[ri])
+	some (ri.target & rj.target)
 }
 
 pred overlap(disj pi, pj: Pack){
@@ -147,7 +144,7 @@ writereq_i と readreq_j の間には readreq_j と overlap する writereq は�
 もしくは writereq_i のデータに readreq_j はアクセスする． 
 */
 fact {
-	all disj wr, wr2: WriteRequest, rr: ReadRequest, t: Time {
+	all disj wr, wr2: WriteReq, rr: ReadReq, t: Time {
 		{
 			lt[wr, rr]
 			lt[rr, wr2]
@@ -156,9 +153,9 @@ fact {
 			rr.began.t = True
 			rr.ended.t = False
 			wr.ended.t = True
-			wr2.began = True
-			wr2.ended = False
-			no wr3: WriteRequest {
+			wr2.began.t = True
+			wr2.ended.t = False
+			no wr3: WriteReq {
 				lt[wr, wr3] and lt[wr3, rr] and overlap[wr3, rr]
 			}
 		} => {
