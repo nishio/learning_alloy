@@ -42,22 +42,32 @@ fun Row2Int (r: Row): Int {
 pred rowHint (j: Int, sizes: seq Int) {
   let r = Int2Row[j] | some cs: seq Col {
     #sizes = #cs
+    // csは黒ブロックの先頭の位置のソートされたシークエンス
     headsSeqInRow [r, cs]
-    all i: sizes.inds | 
+    all i: sizes.inds {
+      // cs[i]をstart, startの位置にsize[i]を足して1を引いた位置にあるColをendと呼ぶ
       let start = cs [i], end = Int2Col [plus [Col2Int [start], minus[sizes [i], 1] ]] {
-       some end
-       all c: start.*cols/next - end.^cols/next | cell [c, r] in Black
-       no end.next or cell [end.next, r] in White
-     }
+        // endが存在する
+        some end
+        // startからendまで全部黒
+        all c: start.*cols/next - end.^cols/next | cell [c, r] in Black
+        // endの次がないか、または白
+        no end.next or cell [end.next, r] in White
+      }
+    }
   }
 }
 
 -- about cols
+// c, rがブロックの先頭であるかどうか
 pred blackHeadInCol (c: Col, r: Row) {
-  r in first or cell[c, r.prev] in White
+	// 最初のRowであるか、または前のRowのセルが白い
+  r in first or cell[c, r.prev] = White
+	// このセルは黒い
   cell[c, r] in Black
 }
 
+// Col cの中の、ブロックの頭であるRowの集合
 fun headsInCol (c: Col): set Row {
   { r: Row | blackHeadInCol[c, r] }
 }
@@ -67,7 +77,9 @@ fact noOtherHeadsInCol {
 }
 
 pred headsSeqInCol (c: Col, s: seq Row) {
+	// sの要素はブロック先頭の集合と同一
   s.elems = headsInCol[c]
+	// sは単調増加
   all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]
 }
 
@@ -79,19 +91,22 @@ fun Col2Int (c: Col): Int {
   #(c.prevs)
 }
 
+fun range(start, end: Region, next: Region -> Region): Region{
+	start.*next - end.^next
+}
 pred colHint (j: Int, sizes: seq Int) {
   let c = Int2Col[j] | some rs: seq Row {
     #sizes = #rs
     headsSeqInCol [c, rs]
-    all i: sizes.inds | 
+    all i: sizes.inds {
       let start = rs [i], end = Int2Row [plus [Row2Int [start], minus[sizes [i], 1] ]] {
-       some end
-       all r: start.*rows/next - end.^rows/next | cell [c, r] in Black
-       no end.next or cell [c, end.next] in White
-     }
+      	some end
+      	all r: range[start, end, rows/next] | cell [c, r] in Black
+      	no end.next or cell [c, end.next] in White
+    	}
+		}
   }
 }
-
 -- riddle from http://homepage1.nifty.com/sabo10/rulelog/illust.html
 solve: run {
   rowHint [0, 0 -> 3]
