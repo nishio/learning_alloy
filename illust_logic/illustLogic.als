@@ -1,12 +1,30 @@
 open util/ordering[Col] as cols
 open util/ordering[Row] as rows
 
-abstract sig Region {}
-sig Col extends Region {
-  cell: Row -> Cell
+abstract sig Region {
+	index: Int
 }
-sig Row extends Region {}
-enum Cell { Black, White }
+sig Col extends Region {
+  cell: Row -> Color
+}{
+	index >= 0
+	index <= 9
+}
+sig Row extends Region {}{
+	index >= 0
+	index <= 9
+}
+
+fact {
+	all r: Col - last {
+		add[r.index, 1] = r.next.index
+	}
+	all r: Row - last {
+		add[r.index, 1] = r.next.index
+	}
+}
+
+enum Color { Black, White }
 
 fact {
   all c: Col, r: Row | one cell [c, r]
@@ -32,11 +50,11 @@ pred headsSeqInRow (r: Row, s: seq Col) {
 }
 
 fun Int2Row (i: Int): Row {
-  {r: Row | #(r.prevs) = i}
+	index.i & Row
 }
 
 fun Row2Int (r: Row): Int {
-  #(r.prevs)
+	r.index
 }
 
 pred rowHint (j: Int, sizes: seq Int) {
@@ -84,11 +102,11 @@ pred headsSeqInCol (c: Col, s: seq Row) {
 }
 
 fun Int2Col (i: Int): Col {
-  {c: Col | #(c.prevs) = i}
+	index.i & Col
 }
 
 fun Col2Int (c: Col): Int {
-  #(c.prevs)
+	c.index
 }
 
 fun range(start, end: Region, next: Region -> Region): Region{
