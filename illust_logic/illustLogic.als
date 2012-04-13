@@ -76,11 +76,17 @@ pred rowHint (j: Int, sizes: seq Int) {
   }
 }
 
+pred prev_is_white(c: Col, r: Row, prev: Region->Region) {
+	// トリック: nextがCol->ColでもRowに使ってよい
+	// なぜなら空集合が返るのでin Whiteが成立するから
+	cell[prev[c], r] + cell[c, prev[r]] in White
+}
+
 -- about cols
 // c, rがブロックの先頭であるかどうか
 pred blackHeadInCol (c: Col, r: Row) {
 	// 最初のRowであるか、または前のRowのセルが白い
-  r in first or cell[c, r.prev] = White
+  r in first or prev_is_white[c, r, rows/prev]
 	// このセルは黒い
   cell[c, r] in Black
 }
