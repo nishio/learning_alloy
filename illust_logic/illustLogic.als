@@ -31,10 +31,6 @@ fact {
 }
 
 -- about rows
-pred blackHeadInRow (c: Col, r: Row) {
-  c in first or cell[c.prev, r] in White
-  cell[c, r] in Black
-}
 
 fun headsInRow (r: Row): set Col {
   { c: Col | blackHeadInRow[c, r] }
@@ -77,20 +73,33 @@ pred rowHint (j: Int, sizes: seq Int) {
 }
 
 pred prev_is_white(c: Col, r: Row, prev: Region->Region) {
-	// トリック: nextがCol->ColでもRowに使ってよい
+	// トリック: prevがCol->ColでもRowに使ってよい
 	// なぜなら空集合が返るのでin Whiteが成立するから
 	cell[prev[c], r] + cell[c, prev[r]] in White
 }
 
--- about cols
+pred no_prev(c: Col, r: Row, prev: Region->Region) {
+	// トリック: nextがCol->ColでもRowに使ってよい
+	// なぜなら空集合が返るのでnoが成立するから
+	no prev[c] and no prev[r]
+}
+
 // c, rがブロックの先頭であるかどうか
-pred blackHeadInCol (c: Col, r: Row) {
+pred is_black_head(c: Col, r: Row, prev: Region->Region) {
 	// 最初のRowであるか、または前のRowのセルが白い
-  r in first or prev_is_white[c, r, rows/prev]
+  no_prev[c, r, prev] or prev_is_white[c, r, prev]
 	// このセルは黒い
   cell[c, r] in Black
 }
 
+pred blackHeadInCol (c: Col, r: Row) {
+	is_black_head[c, r, rows/prev]
+}
+pred blackHeadInRow (c: Col, r: Row) {
+	is_black_head[c, r, cols/prev]
+}
+
+-- about cols
 // Col cの中の、ブロックの頭であるRowの集合
 fun headsInCol (c: Col): set Row {
   { r: Row | blackHeadInCol[c, r] }
