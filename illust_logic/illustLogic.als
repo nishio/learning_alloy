@@ -30,6 +30,34 @@ fact {
   all c: Col, r: Row | one cell [c, r]
 }
 
+-- both Row and Col
+pred prev_is_white(c: Col, r: Row, prev: Region->Region) {
+	// トリック: prevがCol->ColでもRowに使ってよい
+	// なぜなら空集合が返るのでin Whiteが成立するから
+	cell[prev[c], r] + cell[c, prev[r]] in White
+}
+
+pred no_prev(c: Col, r: Row, prev: Region->Region) {
+	// トリック: nextがCol->ColでもRowに使ってよい
+	// なぜなら空集合が返るのでnoが成立するから
+	no prev[c] and no prev[r]
+}
+
+// c, rがブロックの先頭であるかどうか
+pred is_black_head(c: Col, r: Row, prev: Region->Region) {
+	// 最初のRowであるか、または前のRowのセルが白い
+  no_prev[c, r, prev] or prev_is_white[c, r, prev]
+	// このセルは黒い
+  cell[c, r] in Black
+}
+fun range(start, end: Region, next: Region -> Region): Region{
+	start.*next - end.^next
+}
+
+fun get_block_end(start: Region, size: Int): Region{	
+	plus[start.index, minus[size, 1]][index]
+}
+
 -- about rows
 
 fun headsInRow (r: Row): set Col {
@@ -56,11 +84,12 @@ pred rowHint (j: Int, sizes: seq Int) {
     headsSeqInRow [r, cs]
     all i: sizes.inds {
       // cs[i]をstart, startの位置にsize[i]を足して1を引いた位置にあるColをendと呼ぶ
-      let start = cs [i], end = Int2Col [plus [start.index, minus[sizes [i], 1] ]] {
+      let start = cs [i], end = Col & get_block_end[start, sizes[i]] {
+
         // endが存在する
         some end
         // startからendまで全部黒
-        all c: start.*cols/next - end.^cols/next | cell [c, r] in Black
+        all c: range[start, end, cols/next] | cell [c, r] in Black
         // endの次がないか、または白
         no end.next or cell [end.next, r] in White
       }
@@ -68,25 +97,6 @@ pred rowHint (j: Int, sizes: seq Int) {
   }
 }
 
-pred prev_is_white(c: Col, r: Row, prev: Region->Region) {
-	// トリック: prevがCol->ColでもRowに使ってよい
-	// なぜなら空集合が返るのでin Whiteが成立するから
-	cell[prev[c], r] + cell[c, prev[r]] in White
-}
-
-pred no_prev(c: Col, r: Row, prev: Region->Region) {
-	// トリック: nextがCol->ColでもRowに使ってよい
-	// なぜなら空集合が返るのでnoが成立するから
-	no prev[c] and no prev[r]
-}
-
-// c, rがブロックの先頭であるかどうか
-pred is_black_head(c: Col, r: Row, prev: Region->Region) {
-	// 最初のRowであるか、または前のRowのセルが白い
-  no_prev[c, r, prev] or prev_is_white[c, r, prev]
-	// このセルは黒い
-  cell[c, r] in Black
-}
 
 pred blackHeadInCol (c: Col, r: Row) {
 	is_black_head[c, r, rows/prev]
@@ -116,15 +126,13 @@ fun Int2Col (i: Int): Col {
 	index.i & Col
 }
 
-fun range(start, end: Region, next: Region -> Region): Region{
-	start.*next - end.^next
-}
+
 pred colHint (j: Int, sizes: seq Int) {
   let c = Int2Col[j] | some rs: seq Row {
     #sizes = #rs
     headsSeqInCol [c, rs]
     all i: sizes.inds {
-      let start = rs [i], end = Int2Row [plus [start.index, minus[sizes [i], 1] ]] {
+      let start = rs [i], end = Row & get_block_end[start, sizes[i]] {
       	some end
       	all r: range[start, end, rows/next] | cell [c, r] in Black
       	no end.next or cell [c, end.next] in White
