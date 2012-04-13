@@ -518,4 +518,4 @@ fact {
     }
   }
 }
-run{} for 5 int
+run{} for 1 but 5 int
