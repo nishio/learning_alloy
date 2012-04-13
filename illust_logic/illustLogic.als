@@ -15,8 +15,6 @@ sig Row extends Region {}{
 	index <= 9
 }
 
-
-
 fact {
 	all r: Col - last {
 		add[r.index, 1] = r.next.index
@@ -60,6 +58,8 @@ fun get_block_end(start: Region, size: Int): Region{
 	plus[start.index, minus[size, 1]][index]
 }
 
+
+-- about rows or cols
 fun headsInRow (r: Row): set Col {
   { c: Col | is_black_head[c, r, cols/prev]}
 }
@@ -80,12 +80,6 @@ fact noOtherHeadsInCol {
 	}
 }
 
--- about rows or cols
-
-
-
-
-
 
 pred headsSeqInRow (r: Row, s: seq Col) {
   s.elems = headsInRow[r]
@@ -98,13 +92,12 @@ pred headsSeqInCol (c: Col, s: seq Row) {
   all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]
 }
 
-
-fun Int2Row (i: Int): Row {
-	index.i & Row
+fun IntTo(i: Int, R: Region): Region{
+	index.i & R
 }
 
 pred rowHint (j: Int, sizes: seq Int) {
-  let r = Int2Row[j] | some cs: seq Col {
+  let r = IntTo[j, Row] | some cs: seq Col {
     #sizes = #cs
     // csは黒ブロックの先頭の位置のソートされたシークエンス
     headsSeqInRow [r, cs]
@@ -122,20 +115,8 @@ pred rowHint (j: Int, sizes: seq Int) {
     }
   }
 }
-
-
-
--- about cols
-
-
-
-fun Int2Col (i: Int): Col {
-	index.i & Col
-}
-
-
 pred colHint (j: Int, sizes: seq Int) {
-  let c = Int2Col[j] | some rs: seq Row {
+  let c = IntTo[j, Col] | some rs: seq Row {
     #sizes = #rs
     headsSeqInCol [c, rs]
     all i: sizes.inds {
