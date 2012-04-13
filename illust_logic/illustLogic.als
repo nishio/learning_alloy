@@ -15,6 +15,8 @@ sig Row extends Region {}{
 	index <= 9
 }
 
+
+
 fact {
 	all r: Col - last {
 		add[r.index, 1] = r.next.index
@@ -58,20 +60,44 @@ fun get_block_end(start: Region, size: Int): Region{
 	plus[start.index, minus[size, 1]][index]
 }
 
--- about rows
-
 fun headsInRow (r: Row): set Col {
-  { c: Col | blackHeadInRow[c, r] }
+  { c: Col | is_black_head[c, r, cols/prev]}
+}
+
+// Col cの中の、ブロックの頭であるRowの集合
+fun headsInCol (c: Col): set Row {
+  { r: Row | is_black_head[c, r, rows/prev]}
 }
 
 fact noOtherHeadsInRow {
-  no c: Col, r: Row | c not in headsInRow[r] and blackHeadInRow[c, r]
+  no c: Col, r: Row {
+		c not in headsInRow[r] and is_black_head[c, r, cols/prev]
+	}
 }
+fact noOtherHeadsInCol {
+  no c: Col, r: Row {
+		r not in headsInCol[c] and is_black_head[c, r, rows/prev]
+	}
+}
+
+-- about rows or cols
+
+
+
+
+
 
 pred headsSeqInRow (r: Row, s: seq Col) {
   s.elems = headsInRow[r]
   all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]
 }
+pred headsSeqInCol (c: Col, s: seq Row) {
+	// sの要素はブロック先頭の集合と同一
+  s.elems = headsInCol[c]
+	// sは単調増加
+  all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]
+}
+
 
 fun Int2Row (i: Int): Row {
 	index.i & Row
@@ -98,29 +124,10 @@ pred rowHint (j: Int, sizes: seq Int) {
 }
 
 
-pred blackHeadInCol (c: Col, r: Row) {
-	is_black_head[c, r, rows/prev]
-}
-pred blackHeadInRow (c: Col, r: Row) {
-	is_black_head[c, r, cols/prev]
-}
 
 -- about cols
-// Col cの中の、ブロックの頭であるRowの集合
-fun headsInCol (c: Col): set Row {
-  { r: Row | blackHeadInCol[c, r] }
-}
 
-fact noOtherHeadsInCol {
-  no c: Col, r: Row | r not in headsInCol[c] and blackHeadInCol[c, r]
-}
 
-pred headsSeqInCol (c: Col, s: seq Row) {
-	// sの要素はブロック先頭の集合と同一
-  s.elems = headsInCol[c]
-	// sは単調増加
-  all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]
-}
 
 fun Int2Col (i: Int): Col {
 	index.i & Col
