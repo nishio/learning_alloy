@@ -58,43 +58,36 @@ fun get_block_end(start: Region, size: Int): Region{
 	plus[start.index, minus[size, 1]][index]
 }
 
+fun IntTo(i: Int, R: Region): Region{
+	index.i & R
+}
 
 -- about rows or cols
-fun headsInRow (r: Row): set Col {
-  { c: Col | is_black_head[c, r, cols/prev]}
-}
-
-// Col cの中の、ブロックの頭であるRowの集合
-fun headsInCol (c: Col): set Row {
-  { r: Row | is_black_head[c, r, rows/prev]}
-}
-
 fact noOtherHeadsInRow {
   no c: Col, r: Row {
-		c not in headsInRow[r] and is_black_head[c, r, cols/prev]
+		c not in { c: Col | is_black_head[c, r, cols/prev]}
+		is_black_head[c, r, cols/prev]
 	}
 }
 fact noOtherHeadsInCol {
   no c: Col, r: Row {
-		r not in headsInCol[c] and is_black_head[c, r, rows/prev]
+		r not in { r: Row | is_black_head[c, r, rows/prev]}
+		is_black_head[c, r, rows/prev]
 	}
 }
 
 
 pred headsSeqInRow (r: Row, s: seq Col) {
-  s.elems = headsInRow[r]
+  s.elems = { c: Col | is_black_head[c, r, cols/prev]}
   all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]
 }
 pred headsSeqInCol (c: Col, s: seq Row) {
 	// sの要素はブロック先頭の集合と同一
-  s.elems = headsInCol[c]
+  s.elems = { r: Row | is_black_head[c, r, rows/prev]}
 	// sは単調増加
   all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]
 }
 
-fun IntTo(i: Int, R: Region): Region{
-	index.i & R
-}
 
 pred rowHint (j: Int, sizes: seq Int) {
   let r = IntTo[j, Row] | some cs: seq Col {
