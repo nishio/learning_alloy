@@ -49,10 +49,6 @@ fun Int2Row (i: Int): Row {
 	index.i & Row
 }
 
-fun Row2Int (r: Row): Int {
-	r.index
-}
-
 pred rowHint (j: Int, sizes: seq Int) {
   let r = Int2Row[j] | some cs: seq Col {
     #sizes = #cs
@@ -60,7 +56,7 @@ pred rowHint (j: Int, sizes: seq Int) {
     headsSeqInRow [r, cs]
     all i: sizes.inds {
       // cs[i]をstart, startの位置にsize[i]を足して1を引いた位置にあるColをendと呼ぶ
-      let start = cs [i], end = Int2Col [plus [Col2Int [start], minus[sizes [i], 1] ]] {
+      let start = cs [i], end = Int2Col [plus [start.index, minus[sizes [i], 1] ]] {
         // endが存在する
         some end
         // startからendまで全部黒
@@ -120,10 +116,6 @@ fun Int2Col (i: Int): Col {
 	index.i & Col
 }
 
-fun Col2Int (c: Col): Int {
-	c.index
-}
-
 fun range(start, end: Region, next: Region -> Region): Region{
 	start.*next - end.^next
 }
@@ -132,7 +124,7 @@ pred colHint (j: Int, sizes: seq Int) {
     #sizes = #rs
     headsSeqInCol [c, rs]
     all i: sizes.inds {
-      let start = rs [i], end = Int2Row [plus [Row2Int [start], minus[sizes [i], 1] ]] {
+      let start = rs [i], end = Int2Row [plus [start.index, minus[sizes [i], 1] ]] {
       	some end
       	all r: range[start, end, rows/next] | cell [c, r] in Black
       	no end.next or cell [c, end.next] in White
