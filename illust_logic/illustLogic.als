@@ -78,16 +78,22 @@ fact noOtherHeadsInCol {
 
 
 pred headsSeqInRow (r: Row, s: seq Col) {
-	s.elems = { c: Col | is_black_head[c, r, cols/prev]}
-	all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]
+	sorted[
+		{ c: Col | is_black_head[c, r, cols/prev]}.index,
+		s.index]
 }
 pred headsSeqInCol (c: Col, s: seq Row) {
-	// sの要素はブロック先頭の集合と同一
-	s.elems = { r: Row | is_black_head[c, r, rows/prev]}
-	// sは単調増加
-	all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]
+	sorted[
+		{ r: Row | is_black_head[c, r, rows/prev]}.index,
+		s.index]
 }
 
+pred sorted(xs: Int, s: seq Int){
+	// sの要素はxsと同一
+	s.elems = xs
+	// sは単調増加
+	all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]	
+}
 
 pred rowHint (j: Int, sizes: seq Int) {
 	let r = IntTo[j, Row] | some cs: seq Col {
