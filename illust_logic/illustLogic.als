@@ -50,10 +50,6 @@ pred is_black_head(c: Col, r: Row, prev: Region->Region) {
 	// このセルは黒い
 	cell[c, r] in Black
 }
-fun range(start, end: Region, next: Region -> Region): Region{
-	start.*next - end.^next
-}
-
 fun get_block_end(start: Region, size: Int): Region{
 	plus[start.index, minus[size, 1]][index]
 }
@@ -82,6 +78,12 @@ pred headsSeqInCol (c: Col, s: seq Row) {
 		s.index]
 }
 
+
+fun range(R: Region, start, end: Int): Region{
+	{r: R | start =< r.index and r.index =< end}
+}
+
+
 pred rowHint (j: Int, sizes: seq Int) {
 	let r = IntTo[j, Row] | some cs: seq Col {
 		#sizes = #cs
@@ -90,11 +92,10 @@ pred rowHint (j: Int, sizes: seq Int) {
 		all i: sizes.inds {
 			// cs[i]をstart, startの位置にsize[i]を足して1を引いた位置にあるColをendと呼ぶ
 			let start = cs [i], end = Col & get_block_end[start, sizes[i]] {
-
 				// endが存在する
 				some end
 				// startからendまで全部黒
-				all c: range[start, end, cols/next] | cell [c, r] in Black
+				all c: range[Col, start.index, end.index] | cell [c, r] in Black
 				// endの次がないか、または白
 				no end.next or cell [end.next, r] in White
 			}
@@ -108,7 +109,7 @@ pred colHint (j: Int, sizes: seq Int) {
 		all i: sizes.inds {
 			let start = rs [i], end = Row & get_block_end[start, sizes[i]] {
 				some end
-				all r: range[start, end, rows/next] | cell [c, r] in Black
+				all r: range[Row, start.index, end.index] | cell [c, r] in Black
 				no end.next or cell [c, end.next] in White
 			}
 		}
