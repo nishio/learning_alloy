@@ -62,20 +62,14 @@ fun IntTo(i: Int, R: Region): Region{
 	index.i & R
 }
 
--- about rows or cols
-fact noOtherHeadsInRow {
-	no c: Col, r: Row {
-		c not in { c: Col | is_black_head[c, r, cols/prev]}
-		is_black_head[c, r, cols/prev]
-	}
-}
-fact noOtherHeadsInCol {
-	no c: Col, r: Row {
-		r not in { r: Row | is_black_head[c, r, rows/prev]}
-		is_black_head[c, r, rows/prev]
-	}
+pred sorted(xs: Int, s: seq Int){
+	// sの要素はxsと同一
+	s.elems = xs
+	// sは単調増加
+	all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]	
 }
 
+-- about rows or cols
 
 pred headsSeqInRow (r: Row, s: seq Col) {
 	sorted[
@@ -86,13 +80,6 @@ pred headsSeqInCol (c: Col, s: seq Row) {
 	sorted[
 		{ r: Row | is_black_head[c, r, rows/prev]}.index,
 		s.index]
-}
-
-pred sorted(xs: Int, s: seq Int){
-	// sの要素はxsと同一
-	s.elems = xs
-	// sは単調増加
-	all i: s.butlast.inds | lt [s[i], s[plus[i, 1]]]	
 }
 
 pred rowHint (j: Int, sizes: seq Int) {
