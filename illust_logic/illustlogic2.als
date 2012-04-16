@@ -1,3 +1,5 @@
+open util/ordering[SmallInt]
+
 one sig Root{
   cell: Int -> Color -> Int
 }{
@@ -36,7 +38,7 @@ pred is_black_head(line: seq Color, pos: Int) {
   }
 }
 
-pred sorted(xs: Int, ss: seq Int){
+pred sorted(xs: SmallInt, ss: seq SmallInt){
   // ssの要素はxsと同一
   ss.elems = xs
   // ssは単調増加
@@ -44,8 +46,8 @@ pred sorted(xs: Int, ss: seq Int){
 }
 
 // ブロック先頭の集合
-fun get_heads(line: seq Color): Int{
-  {i: Int | is_black_head[line, i]}
+fun get_heads(line: seq Color): SmallInt{
+  {i: SmallInt | is_black_head[line, i.to_int]}
 }
 
 fun get_end(start: Int, size: Int): Int{
@@ -75,15 +77,25 @@ pred next_is_not_black(line: seq Color, pos: Int) {
   }
 }
 
+sig SmallInt{}
+fun from_int (i: Int): SmallInt {
+  {x: SmallInt | #(x.prevs) = i}
+}
+
+fun to_int (x: SmallInt): Int {
+  #(x.prevs)
+}
+
 pred hint(line: seq Color, sizes: seq Int){
-  some heads: seq Int {
+  some heads: seq SmallInt {
     #heads = #sizes
     sorted[get_heads[line], heads]
     all i: sizes.inds {
-      let start = heads[i], end = get_end[start, sizes[i]] {
-        some line[end]
-        all_black[line, start, end]
-        next_is_not_black[line, end]
+      let start = heads[i], 
+				end = from_int[get_end[start.to_int, sizes[i]]] {
+        some line[end.to_int]
+        all_black[line, start.to_int, end.to_int]
+        next_is_not_black[line, end.to_int]
       }
     }
   }
@@ -117,4 +129,4 @@ run{
   colHint [7, 0 -> 3]
   colHint [8, 0 -> 1]
   colHint [9, 0 -> 2]
-} for 5 Int
+} for 5 Int, exactly 10 SmallInt
