@@ -8,6 +8,7 @@ one sig Memory {
 	all t: Time {
 		one flag[0].t
 		one flag[1].t
+		no flag[Int - 0 - 1].t
 	}
 }
 
@@ -17,6 +18,7 @@ one sig PC {
 	all t: Time {
 		one proc[0].t
 		one proc[1].t
+		no proc[Int - 0 - 1].t
 	}
 }
 
@@ -93,14 +95,27 @@ pred step(t: Time) {
 	}
 }
 
+check MutualExclusion {
+	no t: Time {
+		PC.proc[0].t = 3
+		PC.proc[1].t = 3
+	}
+} for 25 Time
+
+check BoundedWaiting {
+	no t: Time, pid: Int {
+		PC.proc[pid].t = 2
+		PC.proc[pid].(t.next) = 2
+		PC.proc[pid].(t.next.next) = 2
+		PC.proc[pid].(t.next.next.next) = 2
+		PC.proc[pid].(t.next.next.next.next) = 2
+	}
+} for 7 Time
+
 fact {
 	all t: Time - first {
 		step[t]
 	}
 }
 run {
-	some t: Time {
-		PC.proc[0].t = 3
-		PC.proc[1].t = 3
-	}
-} for 20 Time
+} for exactly 20 Time
