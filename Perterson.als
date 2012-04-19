@@ -62,21 +62,21 @@ pred step(t: Time) {
 			(pc = 0) => {
 				// flag[0] = 1
 				store[t, Memory.flag[pid], 1]
-				nextpc = 1
+				nextpc = plus[pc, 1]
 				no_change[t, Memory.turn]
 			}
 			(pc = 1) => {
 				// flag[0] = 1
 				store[t, Memory.turn, other]
-				nextpc = 2
+				nextpc = plus[pc, 1]
 				no_change[t, Memory.flag[pid]]
 			}
 			(pc = 2) => {
 				// while( flag[1] && turn == 1 );
 				must_wait[t, pid] => {
-					nextpc = 2
+					nextpc = pc
 				}else{
-					nextpc = 3
+					nextpc = plus[pc, 1]
 				}
 				no_change[t, Memory.turn]
 				no_change[t, Memory.flag[pid]]
