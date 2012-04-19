@@ -1,5 +1,7 @@
 import bs4
 import re
+from collections import defaultdict
+
 def load(s=None):
     global soup
     if s == None:
@@ -7,10 +9,15 @@ def load(s=None):
 
     soup = bs4.BeautifulSoup(file(s))
 
-class AlloyList(list):
-    def map(self, f):
-        return AlloyList(f(*args) for args in self)
 
+def _is_two_dim(obj):
+    if isinstance(obj, list):
+        if isinstance(obj[0], list):
+            return True
+    return False
+
+
+class AlloyList(list):
     def filter(self, f):
         return AlloyList(args for args in self if f(*args))
 
@@ -27,16 +34,40 @@ class AlloyList(list):
             args + [_int(args[c]) for c in cols] for args in self)
 
     def join(self, al):
-        assert isinstance(al, AlloyList)
+        assert _is_two_dim(al)
         return AlloyList(
             lhs[:-1] + rhs[1:]
             for lhs in self for rhs in al
             if lhs[-1] == rhs[0])
-    
+
+    def map(self, f):
+        return AlloyList(f(*args) for args in self)
+
+    def group_by(self, idx, f=lambda *x: x):
+        assert isinstance(idx, int)
+        group = defaultdict(AlloyList)
+        for r in self:
+            group[r[idx]].append(r)
+        result = AlloyList()
+        for key in sorted(group.keys()):
+            result.append(f(key, group[key]))
+        return result
+
+    def reverse(self):
+        return AlloyList(list(reversed(r)) for r in self)
+
+    def print_unlines(self):
+        print "\n".join(str(r) for r in self)
+
 def get_field(label):
     return AlloyList(
         [x.attrs["label"] for x in r.findAll("atom")]
         for r in soup.find("field", label=label).findAll("tuple"))
+
+def get_skolem(label):
+    return AlloyList(
+        [x.attrs["label"] for x in r.findAll("atom")]
+        for r in soup.find("skolem", label=label).findAll("tuple"))
 
 def get_sig(label):
     return AlloyList(
@@ -45,6 +76,8 @@ def get_sig(label):
 
 def get(label):
     try:
+        if label[0] == "$":
+            return get_skolem(label)
         return get_field(label)
     except:
         pass
