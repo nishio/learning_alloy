@@ -13,7 +13,8 @@ one sig Memory {
 }
 
 one sig PC {
-	proc: Int -> Int -> Time
+	proc: Int -> Int -> Time,
+	current_pid: Int -> Time
 }{
 	all t: Time {
 		one proc[0].t
@@ -54,6 +55,7 @@ pred no_change(t: Time, changable: univ -> Time){
 pred step(t: Time) {
 	// 各時刻でどちらかのプロセスが1命令実行する
 	some pid: (0 + 1) {
+		PC.current_pid.t = pid
 		let pc = PC.proc[pid].(t.prev),
 				nextpc = PC.proc[pid].t,
 				other = (0 + 1) - pid
@@ -100,9 +102,9 @@ check MutualExclusion {
 		PC.proc[0].t = 3
 		PC.proc[1].t = 3
 	}
-} for 25 Time
+} for 15 Time
 
-check BoundedWaiting {
+check BoundedWaiting_Bad {
 	no t: Time, pid: Int {
 		PC.proc[pid].t = 2
 		PC.proc[pid].(t.next) = 2
@@ -110,7 +112,20 @@ check BoundedWaiting {
 		PC.proc[pid].(t.next.next.next) = 2
 		PC.proc[pid].(t.next.next.next.next) = 2
 	}
-} for 7 Time
+} for 15 Time
+
+check BoundedWaiting {
+	no t, t': Time, pid: Int {
+		let range = Time - t.prevs - t'.nexts {
+			// あるプロセスがずっと2(ロック待ち)で
+			all t'': range | PC.proc[pid].t'' = 2
+			// その間、もう片方のプロセスが2回以上3(クリティカルセクション)を実行
+			#{t'': range | 
+				PC.proc[PC.current_pid.t''].t'' = 3
+			} >= 2
+		}
+	}
+} for 15 Time
 
 fact {
 	all t: Time - first {
