@@ -18,9 +18,6 @@ one sig X extends Person{}
 one sig A extends Person{}
 one sig B extends Person{}
 one sig C extends Person{}
-//one sig D extends Person{}
-//one sig E extends Person{}
-//one sig F extends Person{}
 
 sig Time {
 	// 各時刻に誰かが誰かに自分がどこに行くかを伝える
@@ -33,7 +30,6 @@ sig Time {
 	// 聞き手が話し手と同一ではいけない
 	some targets - Observer - who
 }
-// 誰かと会う、どこかへ行く
 
 sig Place {}
 
@@ -43,19 +39,6 @@ fact {
 		lone (p1.belief)[p2, p3].t
 	}
 }
-
-fun where_is_x(self: Person): Place {
-	let where = self.(self.belief).last {
-		X.where
-	}
-}
-// Xを殺すことが可能だったのは？
-fun can_kill(self: AbsPerson): Person{
-	let where = self.(self.belief).last {
-		X.where.~where - X
-	}
-}
-
 // whoと同じ場所にいた可能性があるのは？
 fun same_place(self: AbsPerson, who: Person): Person{
 	let where = self.(self.belief).last {
