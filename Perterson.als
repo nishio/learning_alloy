@@ -68,7 +68,7 @@ pred step(t: Time) {
 				no_change[t, Memory.turn]
 			}
 			(pc = 1) => {
-				// flag[0] = 1
+				// turn = 1
 				store[t, Memory.turn, other]
 				nextpc = plus[pc, 1]
 				no_change[t, Memory.flag[pid]]
