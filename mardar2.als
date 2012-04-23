@@ -30,7 +30,6 @@ sig BeforeMardar extends Time {
 	some targets - who
 }
 one sig Mardar extends Time {}
-sig AfterMardar extends Time {}
 
 sig Place {}
 
@@ -72,9 +71,8 @@ pred step(t', t: Time){
 			p.belief.t = p.belief.t'
 		}
 		(p in t.who) => {
-			// 自分が言ったところに行く(嘘はつかない)
-			// 犯人はこれを守らなくてよいように緩めても良い
-			p.real_place.t = t.where
+			// 犯人以外は自分が言ったところに行く(嘘はつかない)
+			(no p.is_killer) => p.real_place.t = t.where
 		}else{
 			p.real_place.t = p.real_place.t'
 		}
@@ -99,13 +97,11 @@ pred on_mardar(t', t: Time){
 
 fact {
 	BeforeMardar = Mardar.prevs
-	AfterMardar = Mardar.nexts
 	init[first]
 	all t: BeforeMardar - first{
 		step[t.prev, t]
 	}
 	on_mardar[Mardar.prev, Mardar]
-	//final[last.prev, last]
 }
 
 // whoと同じ場所にいた可能性があるのは？
@@ -133,5 +129,29 @@ run {
 	// RubyはPythonが犯人だと、BはAが犯人だと考えている
 	same_place[Ruby, PHP] = Python
 	same_place[Python, PHP] = Ruby
-	// 読者がPythonとRuby
-} for 7 Time, 3 Place
+	// 読者がPythonとRubyの話を聞いた後、正しく犯人を当てられる
+	// 3人分の意見を聞いている架空の人の信念を考える
+	some belief: Person -> Place -> Time {
+		no belief.first
+		all t: BeforeMardar - first{
+			let t' = t.prev{
+				(some (Me + Python + Ruby) & t.targets) => {
+					// 三人の誰かが聞いていれば信念が上書きされる
+					belief.t = belief.t' ++ (t.who -> t.where)
+				}else{
+					// 信念が変化しない
+					belief.t = belief.t'
+				}
+			}
+		}
+		let who = PHP, where = belief.last {
+			(who.where.~where + {p: Person | no p.where} - who)
+			= is_killer.univ
+		}
+	}
+} for 10 Time, 4 Place
+/*
+Generating the solution...
+   304588 vars. 10844 primary vars. 903960 clauses. 5837ms.
+   . found. . is consistent. 46544ms.
+*/
