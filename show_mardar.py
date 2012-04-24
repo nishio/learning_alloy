@@ -8,16 +8,17 @@ def clean(s):
 
 def to_time(s):
     v = int(re.search("\d+", s[0]).group())
-    h = v / 2 + 7
-    m = 3 if (v % 2 == 1) else 0
+    #h = v / 2 + 7
+    #m = 3 if (v % 2 == 1) else 0
+    h = 7 + v
+    m = 0
     return "%d:%d0" % (h, m)
 
 def show_t(time):
-    print to_time(time)
-    print "who:",
+    print to_time(time),
     UtilList([time]).join(get("who")).map(clean).print_unwords()
-    print "where:", UtilList([time]).join(get("where")).join(PLACE).as_scaler()
-    print "targets:",
+    print u"「%sへ行く」" % UtilList([time]).join(get("where")).join(PLACE).as_scaler()
+    print u"聞いていた人=",
     UtilList([time]).join(get("targets")).map(clean).print_unwords()
 
 """

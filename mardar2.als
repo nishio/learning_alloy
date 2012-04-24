@@ -114,6 +114,12 @@ fun same_place(self: Person, who: Person): Person{
 
 run {
 	one is_killer // 犯人は一人だけ
+	// Ruby, Python, 読者はPHPがどこに行くつもりか聞いた
+	all p: Ruby + Python + Me {
+		some t: Time {
+			PHP in t.who and p in t.targets
+		}
+	}
 	// Ruby, Python, PHP, 読者は犯人ではない
 	no (Ruby + Python + Me + PHP).is_killer
 	// 犯人は自分以外はみな自分が犯人だと考えないと考えている
@@ -126,7 +132,7 @@ run {
 	}
 	// 読者は当初PythonかRubyが犯人だと考えている
 	same_place[Me, PHP] = Python + Ruby
-	// RubyはPythonが犯人だと、BはAが犯人だと考えている
+	// RubyはPythonが犯人だと、PythonはRubyが犯人だと考えている
 	same_place[Ruby, PHP] = Python
 	same_place[Python, PHP] = Ruby
 	// 読者がPythonとRubyの話を聞いた後、正しく犯人を当てられる
@@ -144,14 +150,11 @@ run {
 				}
 			}
 		}
+		// バグ: ここに最終時刻での信念の更新に関する制約を書く必要があった
+		// 3人分の意見をまとめた結果、犯人を正しく推測できる
 		let who = PHP, where = belief.last {
 			(who.where.~where + {p: Person | no p.where} - who)
 			= is_killer.univ
 		}
 	}
-} for 10 Time, 4 Place
-/*
-Generating the solution...
-   304588 vars. 10844 primary vars. 903960 clauses. 5837ms.
-   . found. . is consistent. 46544ms.
-*/
+} for 6 Time, 4 Place
