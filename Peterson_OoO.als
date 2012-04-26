@@ -2,10 +2,6 @@ open util/ordering[Time]
 
 abstract sig Command {}
 
-one sig MFence{}
-one sig LFence{}
-one sig SFence{}
-
 abstract sig Load extends Command{}
 abstract sig Store extends Command{}
 sig Movl extends Store{
@@ -17,6 +13,7 @@ sig CmplJe extends Load{
 	target: (0 + 1) -> Time,
 	jump_to: Int
 }
+
 one sig CriticalSection extends Store{}
 
 fun movl(_value: Int, _target: (0 + 1) -> Time): Movl{
@@ -105,13 +102,48 @@ pred InOrder {
 	// 選ばれた命令より前に未実行の命令はない
 	// 古き良き時代のインオーダー実行
 }
-pred Intel {
-	// 同一メモリに対するLoadとStoreは実行順を入れ替えない
-	// 多分Intelはこの挙動
+pred X86 {
+	
+}
+pred sfence(i: Int){
+	// まだWが残っている状態で次のWを読んではいけない
+}
+pred lfence(i: Int){
+	// まだRが残っている状態でRやWを読んではいけない
+}
+pred mfence(i: Int){
+	// RやWが残っている状態でRやWを読んではいけない
 }
 pred step {
 	// 各時刻に守られているべき制約
 	
 }
+fact {
+	all t: Time - first {
+		step[t]
+	}
+}
+
+check BoundedWaiting {
+	no t, t': Time, pid: Int {
+		let range = Time - t.prevs - t'.nexts {
+			// あるプロセスがずっと2(ロック待ち)で
+			all t'': range | PC.proc[pid].t'' = 2
+			// その間、もう片方のプロセスが2回以上3(クリティカルセクション)を実行
+			#{t'': range | 
+				PC.proc[PC.current_pid.t''].t'' = 3
+			} >= 2
+		}
+	}
+} for 15 Time
+
+check MutualExclusion {
+	no t: Time {
+		PC.proc[0].t = 3
+		PC.proc[1].t = 3
+	}
+} for 15 Time
+
+
 run {
 } for 5 Int
