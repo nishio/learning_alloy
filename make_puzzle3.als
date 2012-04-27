@@ -1,9 +1,8 @@
 
-enum Person {P0, P1, P2, P3, P4}
-
+enum Person {A, B, C, D, E}
 
 enum Bool {T, F}
-
+enum BoolBool {TT, TF, FT, FF}
 
 abstract sig Constrain{}
 
@@ -21,15 +20,25 @@ sig is_coward extends Constrain {
 	by not in who
 }
 
-pred satisfy(cs: Constrain, p0_0, p0_1, p1_0, p1_1, p2_0, p2_1, p3_0, p3_1, p4_0, p4_1: Bool){
+pred satisfy(cs: Constrain, a, b, c, d, e: BoolBool){
   let
-		b0 = (P0 -> p0_0) + (P1 -> p1_0) + (P2 -> p2_0) + (P3 -> p3_0) + (P4 -> p4_0),
-  	b1 = (P0 -> p0_1) + (P1 -> p1_1) + (P2 -> p2_1) + (P3 -> p3_1) + (P4 -> p4_1)
+		bb = (A -> a) + (B -> b) + (C -> c) + (D -> d) + (E -> e),
+		b0 = bb.(TT -> T + TF -> T + FT -> F + FF -> F),
+  	b1 = bb.(TT -> T + TF -> F + FT -> T + FF -> F)
   {
 		// b0: Person -> Bool // 正直
 		// b1: Person -> Bool // 小心
 		// 嘘つきの人数を指定
-		#{b0.F} = 3
+		#{b0.F} = 2
+		// 小心者の人数を指定
+		#{b1.T} = 2
+		// 嘘つき小心者の人数を指定
+		//#{b0.F & b1.T} > 0
+/*
+		all p: b0.F & b1.T{ // 嘘つき小心者は2個以上の解答をしている
+			plus[#(is_coward <: by).p, #(is_liar <: by).p] > 1
+		}
+*/
 		// すべての嘘つき発言について、発言者が正直なら充足される
 		all c: cs & is_liar{
 			(c.by.b0 = T) => (c.who.b0 = F)
@@ -39,35 +48,41 @@ pred satisfy(cs: Constrain, p0_0, p0_1, p1_0, p1_1, p2_0, p2_1, p3_0, p3_1, p4_0
 			(c.by.b0 = T) => (c.who.b1 = T)
 		}
 		// すべてのnot小心な嘘つきについて
+/*
 		all p: b0.F & b1.F {
 			// 全て正直ではない:
-			(not
-			all c: (is_coward <: by).p {
-				c.who.b1 = T
-			})or(
-			not all c: (is_liar <: by).p {
-				c.who.b0 = F
-			})
-			
+			plus[
+				#{c: (is_coward <: by).p | c.who.b1 = T}
+				#{c: (is_liar <: by).p | c.who.b0 = F}
+			] > 0			
 		}
-		
+*/
+		// すべての小心な嘘つきについて
+		all p: b0.F & b1.T {
+			// 一つしか嘘をつかない:
+			plus[
+				#{c: (is_coward <: by).p | c.who.b1 = F},
+				#{c: (is_liar <: by).p | c.who.b0 = T}
+			] = 1
+		}
   }
 }
 
 
 run {
   let answers = {
-    p0_0, p0_1, p1_0, p1_1, p2_0, p2_1, p3_0, p3_1, p4_0, p4_1: Bool |
-    satisfy[Constrain, p0_0, p0_1, p1_0, p1_1, p2_0, p2_1, p3_0, p3_1, p4_0, p4_1]}
+    a, b, c, d, e: BoolBool |
+    satisfy[Constrain, a, b, c, d, e]}
     {
 
     one answers
 
     all x: Constrain {
       not one {
-        p0_0, p0_1, p1_0, p1_1, p2_0, p2_1, p3_0, p3_1, p4_0, p4_1: Bool |
-        satisfy[Constrain - x, p0_0, p0_1, p1_0, p1_1, p2_0, p2_1, p3_0, p3_1, p4_0, p4_1]
+        a, b, c, d, e: BoolBool |
+        satisfy[Constrain - x, a, b, c, d, e]
       }
     }
+
   }
-}
+} for exactly 10 Constrain
