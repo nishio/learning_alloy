@@ -80,6 +80,9 @@ class UtilList(list):
         return self[0][0]
 
     def one_to_one(self, ys):
+        """
+        concatenate each row of two list of same length, each by each
+        """
         assert len(self) == len(ys)
         return UtilList(x + _ensure_list(y) for (x, y) in zip(self, ys))
 
