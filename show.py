@@ -91,10 +91,15 @@ def _ensure_list(x):
     if isinstance(x, list): return x
     return [x]
 
+def flatten(xs):
+    return reduce(lambda x, y: x + y, xs)
+
 def get_field(label):
+    fields = soup.findAll("field", label=label)
+    tuples = flatten(field.findAll("tuple") for field in fields)
     return UtilList(
         [x.attrs["label"] for x in r.findAll("atom")]
-        for r in soup.find("field", label=label).findAll("tuple"))
+        for r in tuples)
 
 
 def get_skolem(label):
