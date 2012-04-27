@@ -1,0 +1,9 @@
+liars:
+[u'is_liar$0', u'A$0', u'D$0']
+[u'is_liar$1', u'A$0', u'B$0']
+[u'is_liar$2', u'B$0', u'C$0']
+cowards:
+[u'is_coward$0', u'C$0', u'E$0']
+[u'is_coward$1', u'D$0', u'E$0']
+[u'is_coward$2', u'A$0', u'D$0']
+[u'is_coward$3', u'E$0', u'C$0']

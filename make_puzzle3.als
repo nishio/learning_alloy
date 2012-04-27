@@ -32,13 +32,6 @@ pred satisfy(cs: Constrain, a, b, c, d, e: BoolBool){
 		#{b0.F} = 2
 		// 小心者の人数を指定
 		#{b1.T} = 2
-		// 嘘つき小心者の人数を指定
-		//#{b0.F & b1.T} > 0
-/*
-		all p: b0.F & b1.T{ // 嘘つき小心者は2個以上の解答をしている
-			plus[#(is_coward <: by).p, #(is_liar <: by).p] > 1
-		}
-*/
 		// すべての嘘つき発言について、発言者が正直なら充足される
 		all c: cs & is_liar{
 			(c.by.b0 = T) => (c.who.b0 = F)
@@ -47,16 +40,6 @@ pred satisfy(cs: Constrain, a, b, c, d, e: BoolBool){
 		all c: cs & is_coward{
 			(c.by.b0 = T) => (c.who.b1 = T)
 		}
-		// すべてのnot小心な嘘つきについて
-/*
-		all p: b0.F & b1.F {
-			// 全て正直ではない:
-			plus[
-				#{c: (is_coward <: by).p | c.who.b1 = T}
-				#{c: (is_liar <: by).p | c.who.b0 = F}
-			] > 0			
-		}
-*/
 		// すべての小心な嘘つきについて
 		all p: b0.F & b1.T {
 			// 一つしか嘘をつかない:
@@ -85,4 +68,4 @@ run {
     }
 
   }
-} for exactly 10 Constrain
+} for exactly 7 Constrain
