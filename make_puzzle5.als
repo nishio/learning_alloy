@@ -10,36 +10,17 @@ abstract sig Constrain{
 }{
 	by not in who
 }
-
+fact {
+	all disj: x, y: Constrain {
+		not {
+			x.by = y.by
+			x.who = y.who
+			(x in is_liar) <=> (y in is_liar)
+		}
+	}
+}
 sig is_liar extends Constrain {}
 sig is_coward extends Constrain {}
-
-// for visualizaiton
-sig VisPerson{
-	L: set VisPerson,
-	C: set VisPerson,
-	name: Person // show as attr
-}
-
-fact{
-	all p, q: VisPerson{
-		(q in p.L) <=> (
-			some c: is_liar{
-				c.by = p.name
-				c.who = q.name
-			}
-		)
-		(q in p.C) <=> (
-			some c: is_coward{
-				c.by = p.name
-				c.who = q.name
-			}
-		)
-	}
-	all p: Person{
-		one name.p
-	}
-}
 
 pred satisfy(cs: Constrain, a, b, c, d, e: BoolBool){
   let
@@ -83,11 +64,5 @@ run {
     {
 
     one answers
-    all x: Constrain {
-      not one {
-        a, b, c, d, e: BoolBool |
-        satisfy[Constrain - x, a, b, c, d, e]
-      }
-    }
   }
-} for 5 is_liar, 5 is_coward, 5 VisPerson
+} for 5 is_liar, 5 is_coward
