@@ -15,16 +15,117 @@ def load(s=None):
 def load_global(s=None):
     """
     load given XML file and store it in global scope. None returns.
+    intended to use in ipython interactively.
     """
     global soup
     soup = load(s)
 
 
-def _is_two_dim(obj):
-    if isinstance(obj, list) or isinstance(obj, UtilList):
-        if isinstance(obj[0], list):
-            return True
-    return False
+def show_label(target=None):
+    """
+    >>> t = load("test_target.xml")
+    >>> show_label(t)
+    sig:
+      Int
+      String
+      seq/Int
+      this/Person
+      univ
+    field:
+      love
+    skolem:
+      $x
+    """
+    if not target: target = soup
+    data = get_all_label(target)
+    print "sig:"
+    print "\n".join("  %s" % label for label in sorted(data["sig"]))
+    print "field:"
+    print "\n".join("  %s" % label for label in sorted(data["field"]))
+    print "skolem:"
+    print "\n".join("  %s" % label for label in sorted(data["skolem"]))
+
+
+def get_all_label(target=None):
+    """
+    >>> t = load("test_target.xml")
+    >>> get_all_label(t)
+    {'field': [u'love'], 'skolem': [u'$x'], 'sig': [u'seq/Int', u'Int', u'String', u'this/Person', u'univ']}
+    """
+    if not target: target = soup
+    return dict(
+        sig=[x.attrs["label"] for x in target.findAll("sig")],
+        field=[x.attrs["label"] for x in target.findAll("field")],
+        skolem=[x.attrs["label"] for x in target.findAll("skolem")])
+
+
+def get(label, target=None):
+    """
+    >>> t = load("test_target.xml")
+    >>> get("Person", t)
+    UtilList([[u'Person$0'], [u'Person$1'], [u'Person$2']])
+    >>> get("love", t)
+    UtilList([[u'Person$0', u'Person$2'], [u'Person$1', u'Person$1'], [u'Person$2', u'Person$2']])
+    >>> get("$x", t)
+    UtilList([[u'Person$2']])
+    """
+    if not target: target = soup
+    try:
+        if label[0] == "$":
+            return get_skolem(label, target)
+        return get_field(label, target)
+    except:
+        pass
+    try:
+        return get_sig("this/" + label, target)
+    except:
+        pass
+    try:
+        return get_sig(label, target)
+    except:
+        pass
+    return UtilList([[label]])
+
+
+def get_field(label, target=None):
+    """
+    >>> t = load("test_target.xml")
+    >>> get_field("love", t)
+    UtilList([[u'Person$0', u'Person$2'], [u'Person$1', u'Person$1'], [u'Person$2', u'Person$2']])
+    """
+    if not target: target = soup
+    fields = target.findAll("field", label=label)
+    assert fields # not empty
+    def flatten(xs):
+        return reduce(lambda x, y: x + y, xs, [])
+    tuples = flatten(field.findAll("tuple") for field in fields)
+    return UtilList(
+        [x.attrs["label"] for x in r.findAll("atom")]
+        for r in tuples)
+
+
+def get_skolem(label, target=None):
+    """
+    >>> t = load("test_target.xml")
+    >>> get_skolem("$x", t)
+    UtilList([[u'Person$2']])
+    """
+    if not target: target = soup
+    return UtilList(
+        [x.attrs["label"] for x in r.findAll("atom")]
+        for r in target.find("skolem", label=label).findAll("tuple"))
+
+
+def get_sig(label, target=None):
+    """
+    >>> t = load("test_target.xml")
+    >>> get_sig("this/Person", t)
+    UtilList([[u'Person$0'], [u'Person$1'], [u'Person$2']])
+    """
+    if not target: target = soup
+    return UtilList(
+        [r.attrs["label"]]
+        for r in target.find("sig", label=label).findAll("atom"))
 
 
 class UtilList(list):
@@ -184,116 +285,16 @@ class UtilList(list):
         print sep.join(str(r) for r in self)
 
 
+def _is_two_dim(obj):
+    if isinstance(obj, list) or isinstance(obj, UtilList):
+        if isinstance(obj[0], list):
+            return True
+    return False
+
+
 def _ensure_list(x):
     if isinstance(x, list): return x
     return [x]
-
-def flatten(xs):
-    return reduce(lambda x, y: x + y, xs, [])
-
-def get_field(label, target=None):
-    """
-    >>> t = load("test_target.xml")
-    >>> get_field("love", t)
-    UtilList([[u'Person$0', u'Person$2'], [u'Person$1', u'Person$1'], [u'Person$2', u'Person$2']])
-    """
-    if not target: target = soup
-    fields = target.findAll("field", label=label)
-    assert fields # not empty
-    tuples = flatten(field.findAll("tuple") for field in fields)
-    return UtilList(
-        [x.attrs["label"] for x in r.findAll("atom")]
-        for r in tuples)
-
-
-def get_skolem(label, target=None):
-    """
-    >>> t = load("test_target.xml")
-    >>> get_skolem("$x", t)
-    UtilList([[u'Person$2']])
-    """
-    if not target: target = soup
-    return UtilList(
-        [x.attrs["label"] for x in r.findAll("atom")]
-        for r in target.find("skolem", label=label).findAll("tuple"))
-
-
-def get_sig(label, target=None):
-    """
-    >>> t = load("test_target.xml")
-    >>> get_sig("this/Person", t)
-    UtilList([[u'Person$0'], [u'Person$1'], [u'Person$2']])
-    """
-    if not target: target = soup
-    return UtilList(
-        [r.attrs["label"]]
-        for r in target.find("sig", label=label).findAll("atom"))
-
-
-def get(label, target=None):
-    """
-    >>> t = load("test_target.xml")
-    >>> get("Person", t)
-    UtilList([[u'Person$0'], [u'Person$1'], [u'Person$2']])
-    >>> get("love", t)
-    UtilList([[u'Person$0', u'Person$2'], [u'Person$1', u'Person$1'], [u'Person$2', u'Person$2']])
-    >>> get("$x", t)
-    UtilList([[u'Person$2']])
-    """
-    if not target: target = soup
-    try:
-        if label[0] == "$":
-            return get_skolem(label, target)
-        return get_field(label, target)
-    except:
-        pass
-    try:
-        return get_sig("this/" + label, target)
-    except:
-        pass
-    try:
-        return get_sig(label, target)
-    except:
-        pass
-    return UtilList([[label]])
-
-
-def get_all_label(target=None):
-    """
-    >>> t = load("test_target.xml")
-    >>> get_all_label(t)
-    {'field': [u'love'], 'skolem': [u'$x'], 'sig': [u'seq/Int', u'Int', u'String', u'this/Person', u'univ']}
-    """
-    if not target: target = soup
-    return dict(
-        sig=[x.attrs["label"] for x in target.findAll("sig")],
-        field=[x.attrs["label"] for x in target.findAll("field")],
-        skolem=[x.attrs["label"] for x in target.findAll("skolem")])
-
-
-def show_label(target=None):
-    """
-    >>> t = load("test_target.xml")
-    >>> show_label(t)
-    sig:
-      Int
-      String
-      seq/Int
-      this/Person
-      univ
-    field:
-      love
-    skolem:
-      $x
-    """
-    if not target: target = soup
-    data = get_all_label(target)
-    print "sig:"
-    print "\n".join("  %s" % label for label in sorted(data["sig"]))
-    print "field:"
-    print "\n".join("  %s" % label for label in sorted(data["field"]))
-    print "skolem:"
-    print "\n".join("  %s" % label for label in sorted(data["skolem"]))
 
 
 def _test():
