@@ -5,6 +5,10 @@
 Utility to inspect a xml exported by Alloy.
 Read doctext in allopy.py to see how to use.
 
+REQUIREMENT
+===========
+
+BeautifulSoup 4.* http://www.crummy.com/software/BeautifulSoup/
 
 
 DESIGN
