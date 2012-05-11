@@ -1,0 +1,37 @@
+<alloy builddate="unknown">
+
+<instance bitwidth="0" maxseq="0" command="Run run$1" filename="">
+
+<sig label="seq/Int" ID="0" parentID="1" builtin="yes">
+</sig>
+
+<sig label="Int" ID="1" parentID="2" builtin="yes">
+</sig>
+
+<sig label="String" ID="3" parentID="2" builtin="yes">
+</sig>
+
+<sig label="this/Person" ID="4" parentID="2">
+   <atom label="Person$0"/>
+   <atom label="Person$1"/>
+   <atom label="Person$2"/>
+</sig>
+
+<field label="love" ID="5" parentID="4">
+   <tuple> <atom label="Person$0"/> <atom label="Person$2"/> </tuple>
+   <tuple> <atom label="Person$1"/> <atom label="Person$1"/> </tuple>
+   <tuple> <atom label="Person$2"/> <atom label="Person$2"/> </tuple>
+   <types> <type ID="4"/> <type ID="4"/> </types>
+</field>
+
+<sig label="univ" ID="2" builtin="yes">
+</sig>
+
+<skolem label="$x" ID="6">
+   <tuple> <atom label="Person$2"/> </tuple>
+   <types> <type ID="4"/> </types>
+</skolem>
+
+</instance>
+
+</alloy>
