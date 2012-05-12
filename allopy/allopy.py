@@ -1,3 +1,36 @@
+"""
+Allopy: Tool to inspect XMLs which exported from Alloy.
+
+>>> load_global("test_target.xml")
+
+>>> show_label()
+sig:
+  Int
+  String
+  seq/Int
+  this/Person
+  univ
+field:
+  love
+skolem:
+  $x
+
+>>> get("Person")
+UtilList([[u'Person$0'], [u'Person$1'], [u'Person$2']])
+
+>>> get("love")
+UtilList([[u'Person$0', u'Person$2'], [u'Person$1', u'Person$1'], [u'Person$2', u'Person$2']])
+
+>>> get("$x")
+UtilList([[u'Person$2']])
+
+>>> get("Person$0").join(get("love"))
+UtilList([[u'Person$2']])
+
+>>> get("love").join(get("$x"))
+UtilList([[u'Person$0'], [u'Person$2']])
+"""
+
 import bs4
 import re
 from collections import defaultdict
