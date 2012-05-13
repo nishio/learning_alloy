@@ -35,7 +35,7 @@ pred satisfy(cs: Constrain, a, b, c: BoolBool){
       // b0: Person -> Bool // 正直T 嘘をつくかもしれない人
       // b1: Person -> Bool // 犯人T
       // 正直者の人数は1人
-      //#{b0.T} = 1
+      #{b0.T} = 2
       // 犯人は1人
       #{b1.T} = 1
 
@@ -69,8 +69,8 @@ run {
       a, b, c: BoolBool |
     	 satisfy[Constrain, a, b, c]}
    {
-//	some answers
-      one answers
+	some answers
+//      one answers
 /*
       all x: Constrain {
 	 not one {
