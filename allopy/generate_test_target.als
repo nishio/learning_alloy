@@ -1,9 +1,9 @@
 sig Person {
-    love: Person
+   love: Person
 }
 
 run {
-    some x: Person {
-         x.love.love = x
-    }
+   some x: Person {
+      x.love.love = x
+   }
 }
